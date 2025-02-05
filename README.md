@@ -1,8 +1,9 @@
 # VideoFrameDeletor2
 **VideoFrameDeletor repository 코드 리팩토링 중**
+
 **원본 repository: https://github.com/kanghyeonu/VideoFrameDeletor**
 
-H.264/AVC 비디오 압축 표준으로 인코딩된 프레임을 원하는 범위만큼 삭제하는 프로그램 
+H.264/AVC 비디오 압축 표준으로 인코딩된 프레임을 원하는 범위를 바이트레벨에서 삭제하는 프로그램 
 (논문: Frame Sceduling Approach for Real-Time Streaming(ICTC 2024))
 
 ---
