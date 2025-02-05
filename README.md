@@ -1,5 +1,5 @@
 # VideoFrameDeletor2
-**VideoFrameDeletor 레포지토리 리팩토링 중**
+**VideoFrameDeletor repository 코드 리팩토링 중**
 
 H.264/AVC 비디오 압축 표준으로 인코딩된 프레임을 원하는 범위만큼 삭제하는 프로그램 
 (논문: Frame Sceduling Approach for Real-Time Streaming(ICTC 2024))
