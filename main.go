@@ -1,8 +1,8 @@
 package main
 
 import (
-	"videoframesdetector/handler"
-	"videoframesdetector/util"
+	"videoframedetector2/handler"
+	"videoframedetector2/util"
 )
 
 func main() {

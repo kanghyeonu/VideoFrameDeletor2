@@ -6,6 +6,7 @@ type fileHandler struct {
 	deleteOptions        *deleteOptions
 }
 
+// construct the fileHandler struct
 func CreateFileHandler(inputs []string) *fileHandler {
 	h264ReadFileHandler := createReadFileHandler(inputs[1])
 	h264WriteFileHandler := createWriteFileHandler(inputs[1]) // TODO
