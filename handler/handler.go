@@ -23,7 +23,7 @@ func CreateFileHandler(inputs []string) *fileHandler {
 	reverse := inputs[5]
 
 	h264ReadFileHandler := createReadFileHandler(filename)
-	h264WriteFileHandler := createWriteFileHandler(filename) // TODO
+	h264WriteFileHandler := createWriteFileHandler(filename)
 	deleteOptions := setDeleteOptions(bytesToRemove, offset, ratio, reverse)
 	return &fileHandler{
 		h264ReadFileHandler:  h264ReadFileHandler,

@@ -18,6 +18,7 @@ type h264WriteFileHandler struct {
 	fileWriter *bufio.Writer
 }
 
+// openFile opens the file with the given file name
 func openFile(fileName string) *os.File {
 	file, err := os.Open(fileName)
 	if err != nil {
@@ -27,8 +28,19 @@ func openFile(fileName string) *os.File {
 	return file
 }
 
+// createFile creates a file with the given file name for modified video
+func createFile(fileName string) *os.File {
+	file, err := os.Create(fileName)
+	if err != nil {
+		log.Fatalln("Please check the file name and try again.\nError: ", err)
+		return nil
+	}
+	return file
+}
+
+// createReadFileHandler creates a file handler for reading the h264 file
 func createReadFileHandler(fileName string) *h264ReadFileHandler {
-	file := openFile("video file/" + fileName)
+	file := openFile("original videos/" + fileName)
 	return &h264ReadFileHandler{
 		h264File:         file,
 		fileReader:       bufio.NewReader(file),
@@ -36,8 +48,12 @@ func createReadFileHandler(fileName string) *h264ReadFileHandler {
 	}
 }
 
+// createWriteFileHandler creates a file handler for writing the h264 file
 func createWriteFileHandler(fileName string) *h264WriteFileHandler {
-	//TODO: create objectfile according to the parameter
-
-	return nil
+	file := createFile("modified videos/" + fileName)
+	writer := bufio.NewWriter(file)
+	return &h264WriteFileHandler{
+		objectFile: file,
+		fileWriter: writer,
+	}
 }

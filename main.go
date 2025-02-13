@@ -16,8 +16,9 @@ func start() {
 		print(err)
 		return
 	}
+	// create file handler using the validated inputs
 	handler := handler.CreateFileHandler(inputs)
-	print(handler)
+	print("success to create file handler ", handler)
 
 	// TODO
 }
