@@ -8,31 +8,44 @@ import (
 	"strings"
 )
 
-/**s 개수 확인 및 유효한지 검증하는 함수
- * @return string : 입력받은 파일명
+/*
+ * 파라미터 검증 함수수
+ * @return []string : 입력받은 파라미터 문자열 배열열
  */
-func ArgsParser() []string {
-	args := os.Args
-	if len(args) < 6 || len(args) > 6 {
+type argsError struct {
+	Message string
+}
+
+func (e *argsError) Error() string {
+	return e.Message
+}
+
+func ArgsParser(parameters []string) ([]string, error) {
+	inputs := parameters
+	if len(inputs) == 0 {
+		inputs = os.Args
+	}
+
+	if len(inputs) < 6 || len(inputs) > 6 {
 		log.Fatalln("Usage: ./main.go {filename}.h264 {bytesToRemove} {offset} {ratio} {reverse}\n" +
 			"Parameters:\n" +
 			"  filename      string  : Input file name with .h264 extension\n" +
 			"  bytesToRemove int     : 0 to 100 if ratio is true, 0 to n if ratio is false\n" +
-			"  offset        int     : 5 to 100 Offset position for removal\n" +
+			"  offset        int     : 1 to 100 Offset position for removal\n" +
 			"  ratio         bool 	 : Ratio for processing (true: 1/false: 0)\n" +
 			"  reverse       bool    : Reverse the operation (true: 1/false: 0)")
 	}
 
 	// validate the input parameters
-	if isInvalidFileName(args[1]) ||
-		isInvalidBytesToRemoveandRatio(args[2], args[4]) ||
-		isInvalidOffset(args[3]) ||
-		isInvalidReverse(args[5]) {
+	if isInvalidFileName(inputs[1]) ||
+		isInvalidBytesToRemoveandRatio(inputs[2], inputs[4]) ||
+		isInvalidOffset(inputs[3]) ||
+		isInvalidReverse(inputs[5]) {
 
-		log.Fatalln("Invalid Prameter. Please check the input format and try again.")
+		return inputs, &argsError{Message: "Invalid Prameter. Please check the input format and try again."}
 	}
 
-	return args
+	return inputs, nil
 }
 
 func isInvalidFileName(filename string) bool {
@@ -41,18 +54,6 @@ func isInvalidFileName(filename string) bool {
 	}
 	fmt.Println("Please check the file foramt value and try again.")
 	return true
-}
-func isInvalidBytesToRemove(bytesToRemove string) bool {
-	bytesToRemoveInt, err := strconv.Atoi(bytesToRemove)
-	if err != nil {
-		fmt.Println("Please check the bytesToRemove value and try again.\nError: ", err)
-		return true
-	}
-	if bytesToRemoveInt < 0 {
-		fmt.Println("bytesToRemove must be a non-negative integer.")
-		return true
-	}
-	return false
 }
 
 func isInvalidBytesToRemoveandRatio(bytesToRemove string, ratio string) bool {
@@ -73,12 +74,16 @@ func isInvalidBytesToRemoveandRatio(bytesToRemove string, ratio string) bool {
 				"ratio is true, but bytesToRemove is not in the range of 0 to 100.")
 			return true
 		}
-	} else {
+	} else if ratioInt == 0 {
 		if bytesToRemoveInt < 0 {
 			fmt.Println("Please check the bytesToRemove value and try again.\n" +
 				"ratio is false, but bytesToRemove is not in the range of 0 to n.")
 			return true
 		}
+	} else {
+		fmt.Println("Please check the ratio value and try again.\n" +
+			"ratio is only 1(true) or 0(false), but is not.")
+		return true
 	}
 	return false
 }
@@ -89,8 +94,8 @@ func isInvalidOffset(offset string) bool {
 		fmt.Println("Please check the offset value and try again.\nError: ", err)
 		return true
 	}
-	if offsetInt < 5 || offsetInt > 100 {
-		fmt.Println("Offset must be in the range of 5 to 100.")
+	if offsetInt < 1 || offsetInt > 100 {
+		fmt.Println("Offset must be in the range of 1 to 100.")
 		return true
 	}
 	return false

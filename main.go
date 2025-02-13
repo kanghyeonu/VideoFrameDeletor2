@@ -11,7 +11,11 @@ func main() {
 
 func start() {
 	// get file name from command line and validate it
-	inputs := util.ArgsParser()
+	inputs, err := util.ArgsParser([]string{})
+	if err != nil {
+		print(err)
+		return
+	}
 	handler := handler.CreateFileHandler(inputs)
 	print(handler)
 
