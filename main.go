@@ -20,5 +20,5 @@ func start() {
 	handler := handler.CreateFileHandler(inputs)
 	print("success to create file handler ", handler)
 
-	// TODO
+	// TODO process the file
 }

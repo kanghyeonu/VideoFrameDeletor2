@@ -31,3 +31,19 @@ func CreateFileHandler(inputs []string) *fileHandler {
 		deleteOptions:        deleteOptions,
 	}
 }
+
+func (fh *fileHandler) CreateModifiedVideo() {
+	// init parameters
+	numberOfNalu := 0                 // number of NALU
+	readSize := 0                     // read size frome original file
+	writeSize := 0                    // write size to modified file
+	maxNaluSize := 0                  // max NALU size
+	minNaluSize := int(^uint(0) >> 1) // set minNaluSize to the maximum value of int
+
+	// make channel for NALU
+	nalu_chan := make(chan []byte) // channel for NALU
+	go fh.h264ReadFileHandler.getNalUnit(nalu_chan)
+	for nalu := range nalu_chan {
+		// TDO process NALU
+	}
+}
