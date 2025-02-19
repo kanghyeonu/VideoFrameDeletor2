@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"os"
+	"strconv"
 	"videoframedetector2/handler"
 	"videoframedetector2/util"
 )
@@ -14,11 +17,34 @@ func start() {
 	inputs, err := util.ArgsParser([]string{})
 	if err != nil {
 		print(err)
-		return
+		os.Exit(1)
 	}
 	// create file handler using the validated inputs
-	handler := handler.CreateFileHandler(inputs)
-	print("success to create file handler ", handler)
+	h := handler.CreateVideoHandler(inputs)
+	print("success to create video handler")
 
-	// TODO process the file
+	byteToRemove, offset, ratio, reverse, increment := h.GetDeleteOptions()
+
+	// create directory for modified videos
+	// directory name format: "byteToRemove_offset_ratio_reverse_increment"
+	// e.g. "10_20_true_false_5"
+	dirName := "modified videos/" + strconv.Itoa(byteToRemove) + "_" + strconv.Itoa(offset) + "_" + strconv.FormatBool(ratio) + "_" + strconv.FormatBool(reverse) + "_" + strconv.Itoa(increment)
+	util.CreateDirectory(dirName)
+
+	// create modified videos
+	for start_offset := offset; start_offset <= 100; start_offset += increment {
+		// create modified video name
+		// modified video name format: "{offset}.h264"
+		// increment the offset by the increment value
+		// e.g. increment = 5, offset = 5
+		// 		"5.h264", "10.h264", "15.h264", ..., "100.h264"
+		modifiedVideoName := dirName + "/" + strconv.Itoa(start_offset) + ".h264"
+		fmt.Print(modifiedVideoName + " processing...\n")
+
+		// set
+		h.SetWriteFileHandler(modifiedVideoName)
+		h.CreateModifiedVideo(h.GetDeleteOptions()) // TODO
+	}
+
+	//
 }

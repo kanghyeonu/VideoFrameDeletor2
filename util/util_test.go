@@ -1,6 +1,7 @@
 package util
 
 import (
+	"os"
 	"testing"
 )
 
@@ -47,6 +48,33 @@ func TestArgsParser(t *testing.T) {
 		_, err := ArgsParser(inputs)
 		if (err != nil) != test.expectError {
 			t.Errorf("ArgsParser(%v)\nerror = %v\nexpectError %v", inputs, err, test.expectError)
+		}
+	}
+}
+
+func TestCreateDirectory(t *testing.T) {
+	base := ""
+	tests := []struct {
+		dirName     string
+		expectError bool
+	}{
+		{base + "test", false},
+		{base + "test", true},
+		{base + "test2", false},
+	}
+
+	for _, test := range tests {
+		err := CreateDirectory(test.dirName)
+		if (err != nil) != test.expectError {
+			t.Errorf("CreateDirectory(%v)\nerror = %v\nexpectError %v", test.dirName, err, test.expectError)
+		}
+	}
+
+	// remove test directories after test
+	for _, test := range tests {
+		err := os.Remove(test.dirName)
+		if err != nil {
+			return
 		}
 	}
 }

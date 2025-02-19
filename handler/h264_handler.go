@@ -2,7 +2,6 @@ package handler
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -12,8 +11,8 @@ import (
 // variables for KMP algorithm
 // pattern start sequence of NALU
 var (
-	init_table        = []int{0, 1, 2, 0}
-	init_table_3B     = []int{0, 1, 0}
+	init_4Byte_table  = []int{0, 1, 2, 0}
+	init_3Byte_table  = []int{0, 1, 0}
 	start4BytePattern = []byte{0, 0, 0, 1}
 	start3BytePattern = []byte{0, 0, 1}
 )
@@ -72,10 +71,10 @@ func createWriteFileHandler(fileName string) *h264WriteFileHandler {
 
 func (h *h264ReadFileHandler) getNalUnit(nalu_chan chan []byte) {
 	defer close(nalu_chan)
+
 	h.remainingBytes = []byte{}
 	total := 0
-	sentBytes := 0
-	for { // cnt := 0; cnt < 10; cnt++
+	for {
 		readDataBytes, err := io.ReadFull(h.fileReader, h.fileReaderBuffer[:cap(h.fileReaderBuffer)])
 		h.fileReaderBuffer = h.fileReaderBuffer[:readDataBytes] // stream data, not nalu yet
 		if err != nil {
@@ -96,8 +95,8 @@ func (h *h264ReadFileHandler) getNalUnit(nalu_chan chan []byte) {
 		if currentLength > 4 { // Consider the initial starting pattern
 			offset := currentLength - 4
 			startPositions = findStartSequencePosition(h.remainingBytes[offset:])
-			for idx, val := range startPositions {
-				startPositions[idx] = val + offset
+			for _, val := range startPositions {
+				startPositions = append(startPositions, val+offset)
 			}
 		} else {
 			startPositions = findStartSequencePosition(h.remainingBytes)
@@ -110,13 +109,11 @@ func (h *h264ReadFileHandler) getNalUnit(nalu_chan chan []byte) {
 			//start := startPositions[0]
 			start := 0
 			for _, end := range startPositions {
-				if end-start == 0 {
-					fmt.Print("same positon start: ", start, " end: ", end)
-					fmt.Print(startPositions)
+				if start-end == 0 {
+					continue
 				}
 				nalu_chan <- h.remainingBytes[start:end]
 				start = end
-				sentBytes += (end - start)
 			}
 			//pf("[%d-]: %x\n",start ,nalu[:4])
 			h.remainingBytes = h.remainingBytes[start:]
@@ -127,9 +124,7 @@ func (h *h264ReadFileHandler) getNalUnit(nalu_chan chan []byte) {
 	}
 	//last nal unit
 	nalu_chan <- h.remainingBytes
-	sentBytes += len(h.remainingBytes)
 	h.h264File.Close()
-	return
 }
 
 func findStartSequencePosition(data []byte) []int {
@@ -195,9 +190,9 @@ func kmp(data []byte, pattern []byte, ch chan int) {
 	var table []int
 
 	if patternLength == 4 {
-		table = init_table
+		table = init_4Byte_table
 	} else {
-		table = init_table_3B
+		table = init_3Byte_table
 	}
 
 	i := 0
