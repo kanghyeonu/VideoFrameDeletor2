@@ -133,8 +133,14 @@ func isInvalidIncrement(increment string) bool {
 	return false
 }
 
+/*
+ * create directory for modified videos
+ * @param dirName string : 생성할 디렉토리 이름
+ * directory name format: "byteToRemove_offset_ratio_reverse_increment"
+ * e.g. "10_20_true_false_5"
+ */
 func CreateDirectory(dirName string) error {
-	err := os.Mkdir(dirName, 0755)
+	err := os.Mkdir(dirName, 0777)
 	if err != nil {
 		if os.IsExist(err) {
 			fmt.Println("The directory already exists: ", dirName)

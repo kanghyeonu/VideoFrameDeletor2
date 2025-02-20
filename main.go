@@ -25,11 +25,11 @@ func start() {
 
 	byteToRemove, offset, ratio, reverse, increment := h.GetDeleteOptions()
 
-	// create directory for modified videos
-	// directory name format: "byteToRemove_offset_ratio_reverse_increment"
-	// e.g. "10_20_true_false_5"
 	dirName := "modified videos/" + strconv.Itoa(byteToRemove) + "_" + strconv.Itoa(offset) + "_" + strconv.FormatBool(ratio) + "_" + strconv.FormatBool(reverse) + "_" + strconv.Itoa(increment)
-	util.CreateDirectory(dirName)
+	err = util.CreateDirectory(dirName)
+	if err != nil {
+		os.Exit(1)
+	}
 
 	// create modified videos
 	for start_offset := offset; start_offset <= 100; start_offset += increment {

@@ -49,11 +49,11 @@ func (fh *videoHandler) GetDeleteOptions() (int, int, bool, bool, int) {
 		fh.deleteOptions.increment
 }
 
-func (fh *videoHandler) CreateModifiedVideo(byteToRemove int, offset int, ratio bool, reverse bool, increment int) {
-	// init nalu info
-	numberOfNalu := 0 // number of NALU
-	readSize := 0     // read size frome original file
-	//writeSize := 0              // write size to modified file
+func (fh *videoHandler) CreateModifiedVideo(byteToRemove int, offset int, ratio bool, reverse bool) {
+
+	numberOfNalu := 0           // number of NALU
+	readSize := 0               // read size frome original file
+	writeSize := 0              // write size to modified file
 	maxNaluSize := math.Inf(-1) // max NALU size
 	minNaluSize := math.Inf(1)  // set minNaluSize to the maximum value of int
 	var naluLenSlice []int      // NALU slice
@@ -78,6 +78,7 @@ func (fh *videoHandler) CreateModifiedVideo(byteToRemove int, offset int, ratio 
 
 		// delete NALU
 		// TODO: implement deleteNALU
+		deletedNalu, deletedSize := deleteNaluByParams(nalu, byteToRemove, offset, ratio, reverse)
 
 	}
 	close(nalu_chan)
@@ -86,7 +87,10 @@ func (fh *videoHandler) CreateModifiedVideo(byteToRemove int, offset int, ratio 
 	// 나중에 리스트 형식으로 반환?
 	fmt.Println("Number of NALU: ", numberOfNalu)
 	fmt.Println("Read size: ", readSize)
+	fmt.Println("Write size: ", writeSize)
+	fmt.Print("Deleted size: ", readSize-writeSize)
 	fmt.Println("Max NALU size: ", maxNaluSize)
 	fmt.Println("Min NALU size: ", minNaluSize)
 	fmt.Println("number of NALU in video: ", len(naluLenSlice))
+
 }

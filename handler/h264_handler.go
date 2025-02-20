@@ -11,8 +11,8 @@ import (
 // variables for KMP algorithm
 // pattern start sequence of NALU
 var (
-	init_4Byte_table  = []int{0, 1, 2, 0}
-	init_3Byte_table  = []int{0, 1, 0}
+	init4Bytetable    = []int{0, 1, 2, 0}
+	init3Bytetable    = []int{0, 1, 0}
 	start4BytePattern = []byte{0, 0, 0, 1}
 	start3BytePattern = []byte{0, 0, 1}
 )
@@ -190,9 +190,9 @@ func kmp(data []byte, pattern []byte, ch chan int) {
 	var table []int
 
 	if patternLength == 4 {
-		table = init_4Byte_table
+		table = init4Bytetable
 	} else {
-		table = init_3Byte_table
+		table = init3Bytetable
 	}
 
 	i := 0
