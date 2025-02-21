@@ -77,8 +77,9 @@ func (fh *videoHandler) CreateModifiedVideo(byteToRemove int, offset int, ratio 
 		readSize += naluLen
 
 		// delete NALU
-		// TODO: implement deleteNALU
 		deletedNalu, deletedSize := deleteNaluByParams(nalu, byteToRemove, offset, ratio, reverse)
+
+		// TODO : write NALU to modified file
 
 	}
 	close(nalu_chan)

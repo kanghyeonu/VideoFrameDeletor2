@@ -35,16 +35,19 @@ func setDeleteOptions(bytesToRemove string, offset string, ratio string, reverse
  *@return []byte, int: deletedNalu, deletedBytes
  */
 func deleteNaluByParams(nalu []byte, bytesToRemove int, offset int, ratio bool, reverse bool) ([]byte, int) {
-	// TODO
+	// nalu is empty
 	if len(nalu) == 0 {
 		fmt.Print("no data to be deleted")
 		return nil, 0
-	} else if p.bytesToRemove < 1 {
+	}
+
+	// nothing to delete
+	if bytesToRemove < 1 {
 		fmt.Print("nalu copy mode: ", len(nalu), "Bytes are copied")
 		return nalu, 0
 	}
-	N := p.bytesToRemove
 
+	// init startPatternLen
 	var startPatternLen int
 	if nalu[2] == start3BytePattern[2] {
 		startPatternLen = 3
@@ -52,56 +55,50 @@ func deleteNaluByParams(nalu []byte, bytesToRemove int, offset int, ratio bool, 
 		startPatternLen = 4
 	}
 
-	// pps and sps is exception
+	// pps and sps is excluded
 	if nalu[startPatternLen]&0x1f == 7 || nalu[startPatternLen]&0x1f == 8 {
 		return nalu, 0
 	}
 
-	//TODO
-	offset := int(float64(offset*(len(nalu)-startPatternLen-1))*0.01) + startPatternLen + 1 // +1 is nalu header size
-	ratio := ratio
-	reverse := reverse
+	//calculate offset position
+	offsetPos := int(float64(offset*(len(nalu)))*0.01) + startPatternLen + 1 // +1 is nalu header size
+	deleteSize := bytesToRemove
 
 	var deletedNalu []byte
 	copiedNalu := make([]byte, len(nalu))
 	copy(copiedNalu, nalu)
 	//  data ratio based, value must to be haved 1 ~ 99
 	if ratio {
-		if N > 99 || N < 1 {
-			fmt.Print("Invalid value: ratio must be 1~99 ", N)
-			return nalu
-		}
-
-		sizeToDelete := int(float64(len(nalu)*N) * 0.01)
-		if !reverse {
-			deletedNalu = copiedNalu[:offset]
-			if offset+sizeToDelete > len(nalu) {
-				return deletedNalu
-			}
-
-			deletedNalu = append(deletedNalu, copiedNalu[offset+sizeToDelete:]...)
+		// update deleteSize based on ratio
+		deleteSize = int(float64(len(nalu)*bytesToRemove) * 0.01)
+		if reverse { // delete from end of nalu
+			deletedNalu = copiedNalu[:len(nalu)-deleteSize]
 		} else {
-			deletedNalu = copiedNalu[:len(nalu)-sizeToDelete+1]
+			deletedNalu = copiedNalu[:offsetPos]
+			// check if offset + deleteSize is over nalu's length
+			if offsetPos+deleteSize > len(nalu) {
+				return deletedNalu, len(nalu) - offsetPos
+			}
+			deletedNalu = append(deletedNalu, copiedNalu[offsetPos+deleteSize:]...)
 		}
 
 		// constant based, value don't be haved value over nalu's RBSP length
 	} else {
-		if len(nalu)-1 < N {
-			fmt.Print("Invalid value: constant must not be over nalu's RBSP length ", N)
-			return nalu
+		if len(nalu) < deleteSize {
+			fmt.Print("Invalid value: constant must not be over nalu's RBSP length ", deleteSize)
+			return nalu, 0
 		}
 
-		if !reverse {
-			deletedNalu = copiedNalu[:offset] // +1 is for includeing header
-			if offset+N > len(nalu)-1 {
-				return deletedNalu
-			}
-			deletedNalu = append(deletedNalu, copiedNalu[offset+N:]...)
-
+		if reverse {
+			deletedNalu = copiedNalu[:len(nalu)+1-deleteSize]
 		} else {
-			deletedNalu = copiedNalu[:len(nalu)+1-N]
+			deletedNalu = copiedNalu[:offsetPos] // +1 is for includeing header
+			if offsetPos+deleteSize > len(nalu) {
+				return deletedNalu, len(nalu) - offsetPos
+			}
+			deletedNalu = append(deletedNalu, copiedNalu[offsetPos+deleteSize:]...)
 		}
 	}
 
-	return deletedNalu
+	return deletedNalu, deleteSize
 }
