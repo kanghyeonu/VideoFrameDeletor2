@@ -69,6 +69,14 @@ func createWriteFileHandler(fileName string) *h264WriteFileHandler {
 	}
 }
 
+func (h *h264WriteFileHandler) writeNalUnit(nalu []byte) int {
+	ws, err := h.fileWriter.Write(nalu)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return ws
+}
+
 func (h *h264ReadFileHandler) getNalUnit(nalu_chan chan []byte) {
 	defer close(nalu_chan)
 
@@ -127,6 +135,10 @@ func (h *h264ReadFileHandler) getNalUnit(nalu_chan chan []byte) {
 	h.h264File.Close()
 }
 
+/*
+ * find start sequence position in data
+ * @return []byte, int: deletedNalu, deletedBytes
+ */
 func findStartSequencePosition(data []byte) []int {
 	ch := make(chan int, 2)
 	go kmp(data, start4BytePattern, ch)

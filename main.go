@@ -36,15 +36,13 @@ func start() {
 		// create modified video name
 		// modified video name format: "{offset}.h264"
 		// increment the offset by the increment value
-		// e.g. increment = 5, offset = 5
-		// 		"5.h264", "10.h264", "15.h264", ..., "100.h264"
-		modifiedVideoName := dirName + "/" + strconv.Itoa(start_offset) + ".h264"
+		// e.g. increment = 5, offset = 5 -> "5.h264", "10.h264", "15.h264", ..., "100.h264"
+		modifiedVideoName := dirName + "/" + strconv.Itoa(start_offset)
 		fmt.Print(modifiedVideoName + " processing...\n")
 
-		// set
+		// set write file handler
 		h.SetWriteFileHandler(modifiedVideoName)
-		h.CreateModifiedVideo(h.GetDeleteOptions()) // TODO
+		h.CreateModifiedVideo(byteToRemove, start_offset, ratio, reverse)
 	}
 
-	//
 }

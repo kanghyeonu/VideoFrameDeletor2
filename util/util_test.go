@@ -72,7 +72,7 @@ func TestCreateDirectory(t *testing.T) {
 
 	// remove test directories after test
 	for _, test := range tests {
-		err := os.Remove(test.dirName)
+		err := os.RemoveAll(test.dirName)
 		if err != nil {
 			return
 		}

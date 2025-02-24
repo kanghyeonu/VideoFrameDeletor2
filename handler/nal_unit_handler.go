@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"strconv"
 )
 
@@ -37,13 +36,13 @@ func setDeleteOptions(bytesToRemove string, offset string, ratio string, reverse
 func deleteNaluByParams(nalu []byte, bytesToRemove int, offset int, ratio bool, reverse bool) ([]byte, int) {
 	// nalu is empty
 	if len(nalu) == 0 {
-		fmt.Print("no data to be deleted")
+		//fmt.Print("no data to be deleted")
 		return nil, 0
 	}
 
 	// nothing to delete
 	if bytesToRemove < 1 {
-		fmt.Print("nalu copy mode: ", len(nalu), "Bytes are copied")
+		//fmt.Print("nalu copy mode: ", len(nalu), "Bytes are copied")
 		return nalu, 0
 	}
 
@@ -60,7 +59,7 @@ func deleteNaluByParams(nalu []byte, bytesToRemove int, offset int, ratio bool, 
 		return nalu, 0
 	}
 
-	//calculate offset position
+	//calculate position to start deleting
 	offsetPos := int(float64(offset*(len(nalu)))*0.01) + startPatternLen + 1 // +1 is nalu header size
 	deleteSize := bytesToRemove
 
@@ -84,15 +83,10 @@ func deleteNaluByParams(nalu []byte, bytesToRemove int, offset int, ratio bool, 
 
 		// constant based, value don't be haved value over nalu's RBSP length
 	} else {
-		if len(nalu) < deleteSize {
-			fmt.Print("Invalid value: constant must not be over nalu's RBSP length ", deleteSize)
-			return nalu, 0
-		}
-
 		if reverse {
 			deletedNalu = copiedNalu[:len(nalu)+1-deleteSize]
 		} else {
-			deletedNalu = copiedNalu[:offsetPos] // +1 is for includeing header
+			deletedNalu = copiedNalu[:offsetPos]
 			if offsetPos+deleteSize > len(nalu) {
 				return deletedNalu, len(nalu) - offsetPos
 			}
