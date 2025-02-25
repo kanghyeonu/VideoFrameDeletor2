@@ -39,10 +39,16 @@ func CreateVideoHandler(inputs []string) *videoHandler {
 	}
 }
 
-func (fh *videoHandler) SetWriteFileHandler(filename string) {
-	fh.h264WriteFileHandler = createWriteFileHandler(filename + ".264")
-	fh.logFile = createLogFile(filename + ".txt")
+func (fh *videoHandler) ResetFileHandler() {
+	fh.h264ReadFileHandler.reset()
+	fh.h264WriteFileHandler.init()
+	fh.logFile.Close()
 
+}
+
+func (fh *videoHandler) SetWriteFileHandler(filename string) {
+	fh.h264WriteFileHandler = createWriteFileHandler(filename + ".h264")
+	fh.logFile = createLogFile(filename + ".txt")
 }
 
 func (fh *videoHandler) GetDeleteOptions() (int, int, bool, bool, int) {
@@ -93,14 +99,15 @@ func (fh *videoHandler) CreateModifiedVideo(byteToRemove int, offset int, ratio 
 	// 나중에 리스트 형식으로 반환?
 	// log파일 생성? csv?
 	logger := log.New(fh.logFile, "", log.Ldate|log.Ltime)
-	logger.Println("File name: ", fh.h264WriteFileHandler.objectFile.Name())
-	logger.Println("Number of NALU: ", numberOfNalu)
-	logger.Println("Read size: ", readSize)
-	logger.Println("Write size: ", writeSize)
-	logger.Println("Deleted size: ", deletedSize)
-	logger.Println("Max NALU size: ", maxNaluSize)
-	logger.Println("Min NALU size: ", minNaluSize)
-	logger.Println("number of NALU in video: ", len(naluLenSlice))
+	logger.Printf("File name: %s\nNumber of NALU: %d\nRead size: %d\nWrite size: %d\nDeleted size: %d\nMax NALU size: %f\nMin NALU size: %f\nNumber of NALU in video: %d\n",
+		fh.h264WriteFileHandler.objectFile.Name(),
+		numberOfNalu,
+		readSize,
+		writeSize,
+		deletedSize,
+		maxNaluSize,
+		minNaluSize,
+		len(naluLenSlice))
 
 }
 

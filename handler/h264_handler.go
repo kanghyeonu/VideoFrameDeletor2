@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -29,6 +30,13 @@ type h264WriteFileHandler struct {
 	fileWriter *bufio.Writer
 }
 
+func (h *h264ReadFileHandler) reset() {
+	_, err := h.h264File.Seek(0, 0)
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
 // openFile opens the file with the given file name
 func openFile(fileName string) *os.File {
 	file, err := os.Open(fileName)
@@ -41,6 +49,7 @@ func openFile(fileName string) *os.File {
 
 // createFile creates a file with the given file name for modified video
 func createFile(fileName string) *os.File {
+	fmt.Println(fileName)
 	file, err := os.Create(fileName)
 	if err != nil {
 		log.Fatalln("Please check the file name and try again.\nError: ", err)
@@ -61,12 +70,20 @@ func createReadFileHandler(fileName string) *h264ReadFileHandler {
 
 // createWriteFileHandler creates a file handler for writing the h264 file
 func createWriteFileHandler(fileName string) *h264WriteFileHandler {
-	file := createFile("modified videos/" + fileName)
+	file := createFile(fileName)
 	writer := bufio.NewWriter(file)
 	return &h264WriteFileHandler{
 		objectFile: file,
 		fileWriter: writer,
 	}
+}
+
+func (h *h264WriteFileHandler) init() {
+	h.fileWriter.Flush()
+	h.objectFile.Close()
+
+	h.objectFile = nil
+	h.fileWriter = nil
 }
 
 func (h *h264WriteFileHandler) writeNalUnit(nalu []byte) int {
@@ -83,6 +100,7 @@ func (h *h264ReadFileHandler) getNalUnit(nalu_chan chan []byte) {
 	h.remainingBytes = []byte{}
 	total := 0
 	for {
+		// read file
 		readDataBytes, err := io.ReadFull(h.fileReader, h.fileReaderBuffer[:cap(h.fileReaderBuffer)])
 		h.fileReaderBuffer = h.fileReaderBuffer[:readDataBytes] // stream data, not nalu yet
 		if err != nil {
@@ -100,12 +118,16 @@ func (h *h264ReadFileHandler) getNalUnit(nalu_chan chan []byte) {
 		h.remainingBytes = append(h.remainingBytes, h.fileReaderBuffer...)
 
 		var startPositions = []int{}
-		if currentLength > 4 { // Consider the initial starting pattern
-			offset := currentLength - 4
+
+		// 버퍼에 남은 데이터가 3byte 이상이면 -> 이어붙인 데이터의 시작 위치가 0th 인덱스일 경우 고려
+		if currentLength > 3 {
+			offset := currentLength - 3
 			startPositions = findStartSequencePosition(h.remainingBytes[offset:])
 			for _, val := range startPositions {
 				startPositions = append(startPositions, val+offset)
 			}
+
+			// 3byte 미만이면 무조건
 		} else {
 			startPositions = findStartSequencePosition(h.remainingBytes)
 			if len(startPositions) > 2 {
@@ -132,7 +154,6 @@ func (h *h264ReadFileHandler) getNalUnit(nalu_chan chan []byte) {
 	}
 	//last nal unit
 	nalu_chan <- h.remainingBytes
-	h.h264File.Close()
 }
 
 /*

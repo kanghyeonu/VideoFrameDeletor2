@@ -16,7 +16,6 @@ func start() {
 	// get file name from command line and validate it
 	inputs, err := util.ArgsParser([]string{})
 	if err != nil {
-		print(err)
 		os.Exit(1)
 	}
 	// create file handler using the validated inputs
@@ -36,13 +35,18 @@ func start() {
 		// create modified video name
 		// modified video name format: "{offset}.h264"
 		// increment the offset by the increment value
-		// e.g. increment = 5, offset = 5 -> "5.h264", "10.h264", "15.h264", ..., "100.h264"
-		modifiedVideoName := dirName + "/" + strconv.Itoa(start_offset)
-		fmt.Print(modifiedVideoName + " processing...\n")
+		// e.g. increment = 5, offset = 5 -> "offset5.h264", "offset10.h264", "offset15.h264", ..., "offset100.h264"
+		modifiedVideoName := dirName + "/offset" + strconv.Itoa(start_offset)
+		fmt.Println(modifiedVideoName + " processing...")
 
 		// set write file handler
 		h.SetWriteFileHandler(modifiedVideoName)
+
+		//
 		h.CreateModifiedVideo(byteToRemove, start_offset, ratio, reverse)
+
+		// init
+		h.ResetFileHandler()
 	}
 
 }

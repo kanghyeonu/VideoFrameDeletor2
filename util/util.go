@@ -31,7 +31,7 @@ func ArgsParser(parameters []string) ([]string, error) {
 			"Parameters:\n" +
 			"  filename      string  : Input file name with .h264 extension\n" +
 			"  bytesToRemove int     : 0 to 100 if ratio is true, 0 to n if ratio is false\n" +
-			"  offset        int     : 0 to 100 Offset starting position for deletion in each Nalu\n" +
+			"  start offset  int     : 0 to 100 offset starting position for deletion in each Nalu\n" +
 			"  ratio         bool 	 : Ratio for processing (true: 1/false: 0)\n" +
 			"  reverse       bool    : Reverse the operation (true: 1/false: 0)\n" +
 			"  increment     int     : Increment value for offset")
