@@ -20,7 +20,8 @@ func start() {
 	}
 	// create file handler using the validated inputs
 	h := handler.CreateVideoHandler(inputs)
-	print("success to create video handler")
+	defer h.Close()
+	print("success to create video handler\n")
 
 	byteToRemove, offset, ratio, reverse, increment := h.GetDeleteOptions()
 
@@ -30,23 +31,25 @@ func start() {
 		os.Exit(1)
 	}
 
+	h.CreateLogFile(dirName + "/log.txt")
+
 	// create modified videos
-	for start_offset := offset; start_offset <= 100; start_offset += increment {
+	for start_offset := offset; start_offset <= 100-increment; start_offset += increment {
 		// create modified video name
 		// modified video name format: "{offset}.h264"
 		// increment the offset by the increment value
 		// e.g. increment = 5, offset = 5 -> "offset5.h264", "offset10.h264", "offset15.h264", ..., "offset100.h264"
 		modifiedVideoName := dirName + "/offset" + strconv.Itoa(start_offset)
-		fmt.Println(modifiedVideoName + " processing...")
+		fmt.Println(modifiedVideoName + ".h264 processing...")
 
 		// set write file handler
 		h.SetWriteFileHandler(modifiedVideoName)
 
 		//
 		h.CreateModifiedVideo(byteToRemove, start_offset, ratio, reverse)
-
+		fmt.Println(modifiedVideoName + ".h264 processing...done\n")
 		// init
 		h.ResetFileHandler()
 	}
-
+	print("success to create modified videos\n")
 }

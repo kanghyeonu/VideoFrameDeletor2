@@ -11,6 +11,7 @@ type videoHandler struct {
 	h264WriteFileHandler *h264WriteFileHandler
 	deleteOptions        *deleteOptions
 	logFile              *os.File
+	logger               *log.Logger
 }
 
 /*
@@ -39,27 +40,26 @@ func CreateVideoHandler(inputs []string) *videoHandler {
 	}
 }
 
-func (fh *videoHandler) ResetFileHandler() {
-	fh.h264ReadFileHandler.reset()
-	fh.h264WriteFileHandler.init()
-	fh.logFile.Close()
+func (h *videoHandler) ResetFileHandler() {
+	h.h264ReadFileHandler.reset()
+	h.h264WriteFileHandler.init()
+	h.logFile.Close()
 
 }
 
-func (fh *videoHandler) SetWriteFileHandler(filename string) {
-	fh.h264WriteFileHandler = createWriteFileHandler(filename + ".h264")
-	fh.logFile = createLogFile(filename + ".txt")
+func (h *videoHandler) SetWriteFileHandler(filename string) {
+	h.h264WriteFileHandler = createWriteFileHandler(filename + ".h264")
 }
 
-func (fh *videoHandler) GetDeleteOptions() (int, int, bool, bool, int) {
-	return fh.deleteOptions.bytesToRemove,
-		fh.deleteOptions.offset,
-		fh.deleteOptions.ratio,
-		fh.deleteOptions.reverse,
-		fh.deleteOptions.increment
+func (h *videoHandler) GetDeleteOptions() (int, int, bool, bool, int) {
+	return h.deleteOptions.bytesToRemove,
+		h.deleteOptions.offset,
+		h.deleteOptions.ratio,
+		h.deleteOptions.reverse,
+		h.deleteOptions.increment
 }
 
-func (fh *videoHandler) CreateModifiedVideo(byteToRemove int, offset int, ratio bool, reverse bool) {
+func (h *videoHandler) CreateModifiedVideo(byteToRemove int, offset int, ratio bool, reverse bool) {
 
 	numberOfNalu := 0 // number of NALU
 	readSize := 0     // read size frome original file
@@ -70,8 +70,8 @@ func (fh *videoHandler) CreateModifiedVideo(byteToRemove int, offset int, ratio 
 	var naluLenSlice []int      // NALU slice
 
 	// make channel for NALU
-	nalu_chan := make(chan []byte)                  // channel for NALU
-	go fh.h264ReadFileHandler.getNalUnit(nalu_chan) // get NALU from original file
+	nalu_chan := make(chan []byte)                 // channel for NALU
+	go h.h264ReadFileHandler.getNalUnit(nalu_chan) // get NALU from original file
 
 	for nalu := range nalu_chan {
 		numberOfNalu++
@@ -89,18 +89,16 @@ func (fh *videoHandler) CreateModifiedVideo(byteToRemove int, offset int, ratio 
 
 		// delete NALU & write file
 		deletedNalu, delSize := deleteNaluByParams(nalu, byteToRemove, offset, ratio, reverse)
-		ws := fh.h264WriteFileHandler.writeNalUnit(deletedNalu)
+		ws := h.h264WriteFileHandler.writeNalUnit(deletedNalu)
 		writeSize += ws
 		deletedSize += delSize
 	}
-	close(nalu_chan)
 
 	// print nalu info
 	// 나중에 리스트 형식으로 반환?
-	// log파일 생성? csv?
-	logger := log.New(fh.logFile, "", log.Ldate|log.Ltime)
-	logger.Printf("File name: %s\nNumber of NALU: %d\nRead size: %d\nWrite size: %d\nDeleted size: %d\nMax NALU size: %f\nMin NALU size: %f\nNumber of NALU in video: %d\n",
-		fh.h264WriteFileHandler.objectFile.Name(),
+
+	h.logger.Printf("File name: %s\nNumber of NALU: %d\nRead size: %d\nWrite size: %d\nDeleted size: %d\nMax NALU size: %f\nMin NALU size: %f\nNumber of NALU in video: %d\n",
+		h.h264WriteFileHandler.objectFile.Name(),
 		numberOfNalu,
 		readSize,
 		writeSize,
@@ -111,17 +109,24 @@ func (fh *videoHandler) CreateModifiedVideo(byteToRemove int, offset int, ratio 
 
 }
 
-func createLogFile(fileName string) *os.File {
+func (h *videoHandler) CreateLogFile(fileName string) *os.File {
 	var file *os.File
 	_, err := os.Stat(fileName)
 	if err != nil {
 		if os.IsNotExist(err) {
-			file, err = os.Create(fileName)
+			file, err = os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 			if err != nil {
 				log.Fatalln("Error creating log file: ", err)
 			}
 		}
 	}
-
+	h.logFile = file
+	h.logger = log.New(h.logFile, "", log.Ldate|log.Ltime)
 	return file
+}
+
+func (h *videoHandler) Close() {
+	h.h264ReadFileHandler.close()
+	h.h264WriteFileHandler.close()
+	h.logFile.Close()
 }

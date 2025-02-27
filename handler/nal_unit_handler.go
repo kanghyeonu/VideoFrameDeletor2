@@ -73,6 +73,9 @@ func deleteNaluByParams(nalu []byte, bytesToRemove int, offset int, ratio bool, 
 		if reverse { // delete from end of nalu
 			deletedNalu = copiedNalu[:len(nalu)-deleteSize]
 		} else {
+			if offsetPos > len(nalu) {
+				return copiedNalu, 0
+			}
 			deletedNalu = copiedNalu[:offsetPos]
 			// check if offset + deleteSize is over nalu's length
 			if offsetPos+deleteSize > len(nalu) {

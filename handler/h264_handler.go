@@ -2,7 +2,6 @@ package handler
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -30,6 +29,7 @@ type h264WriteFileHandler struct {
 	fileWriter *bufio.Writer
 }
 
+// reset resets the file handler to the beginning of the file
 func (h *h264ReadFileHandler) reset() {
 	_, err := h.h264File.Seek(0, 0)
 	if err != nil {
@@ -49,7 +49,6 @@ func openFile(fileName string) *os.File {
 
 // createFile creates a file with the given file name for modified video
 func createFile(fileName string) *os.File {
-	fmt.Println(fileName)
 	file, err := os.Create(fileName)
 	if err != nil {
 		log.Fatalln("Please check the file name and try again.\nError: ", err)
@@ -76,6 +75,14 @@ func createWriteFileHandler(fileName string) *h264WriteFileHandler {
 		objectFile: file,
 		fileWriter: writer,
 	}
+}
+
+func (h *h264ReadFileHandler) close() {
+	h.h264File.Close()
+}
+
+func (h *h264WriteFileHandler) close() {
+	h.objectFile.Close()
 }
 
 func (h *h264WriteFileHandler) init() {
@@ -123,8 +130,8 @@ func (h *h264ReadFileHandler) getNalUnit(nalu_chan chan []byte) {
 		if currentLength > 3 {
 			offset := currentLength - 3
 			startPositions = findStartSequencePosition(h.remainingBytes[offset:])
-			for _, val := range startPositions {
-				startPositions = append(startPositions, val+offset)
+			for idx, val := range startPositions {
+				startPositions[idx] = val + offset
 			}
 
 			// 3byte 미만이면 무조건
@@ -140,7 +147,7 @@ func (h *h264ReadFileHandler) getNalUnit(nalu_chan chan []byte) {
 			start := 0
 			for _, end := range startPositions {
 				if start-end == 0 {
-					continue
+
 				}
 				nalu_chan <- h.remainingBytes[start:end]
 				start = end
