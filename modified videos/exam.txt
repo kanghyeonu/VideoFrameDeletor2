@@ -1,0 +1,2 @@
+go run main.go BBB_PIR.h264 5 5 1 0 5 실행
+-> modified Videos/5_5_true_false_5/ 생성
