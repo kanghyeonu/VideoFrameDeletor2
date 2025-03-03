@@ -1,30 +1,57 @@
 # VideoFrameDeletor2
-**VideoFrameDeletor repository 코드 리팩토링 중**
+**VideoFrameDeletor repository 코드 리팩토링**
 
 **원본 repository: https://github.com/kanghyeonu/VideoFrameDeletor**
 
-H.264/AVC 비디오 압축 표준으로 인코딩된 프레임을 원하는 범위를 바이트레벨에서 삭제하는 프로그램 
+H.264/AVC 비디오 압축 표준으로 PIR로 인코딩된 프레임을 원하는 범위를 바이트레벨에서 삭제하는 프로그램 
 (논문: Frame Sceduling Approach for Real-Time Streaming(ICTC 2024))
 
 ---
 
-### 동작 방법
+### Requirement
 
-- ~~FFmpeg와 같은 툴로 .mp4 파일을 .h264로 변환~~
-- ~~파일 내 main문 시작의 for문의 start_offset 변수 설정으로 시작 위치 및 삭제 비율 설정 후 실행~~
-  - ~~**RatioForDeleting:** 삭제 시킬 비율 or 고정 바이트~~
-  - ~~**offset:** 인코딩된 각 프레임의 삭제 시작 위치 설정~~
-  - ~~**ratio**: 프레임의 일정 비율만큼 삭제 if Ture, 프레임을 고정 바이트 수만큼 삭제 if False~~
-  - ~~**reverse**: 프레임 삭제 시작 위치의 기준을 Head 또는 Tail로 설정~~
+- go 1.23.5
+- 비디오 처리 툴(i.e FFmpeg)
+
+---
+
+### Usage
+
+- 코드 다운로드
+
+  ```
+  git clone https://github.com/kanghyeonu/VideoFrameDeletor2.git
+
+- original videos 디렉토리에 수정할 원본 비디오 파일(.h264) 저장 
+
+- 실행 
+
+  exam)
+
+  ```
+  ~/VideoFrameDeletor2> go run main.go BBB_PIR.h264 5 5 1 0 5
+  ```
+
+- 실행 파라미터
+
+  1. **filename** : Input file name with .h264 extension
+  2. **bytesToRemove** : 0 to 100 if ratio is true, 0 to n if ratio is false
+  3. **start offset** : 0 to 100 offset starting position for deletion in each Nalu
+  4. **ratio** : Ratio for processing (true: 1/false: 0) 
+  5. **reverse** : Reverse the operation (true: 1/false: 0)
+  6. **increment** : Increment value for start offset
+
+- 결과 파일
+
+  **예시** **결과 파일의 경우 modified vidoes/5_5_true_false_5/ 의 경로**로 저장
 
 ---
 
 ### 동작 알고리즘
 
-- KMP 알고리즘을 통해서 NAL Unit 시작 패턴 검색
-- 시작 패턴은 3byte 패턴(00001)과 4byte 패턴(000001)으로 구성
-- go Rutine을 이용해 읽어들인 파일의 3, 4바이트 패턴의 위치를 검색
-- 찾아낸 하나의 Nalu를 처리하여 반환
+- h264 표준에서 각 Nalu의 시작 패턴은 **3byte 패턴(0x00001)**과 **4byte 패턴(0x000001)**으로 구성
+- 해당 시작 패턴을 찾아서 일정 수의 바이트 삭제 (비디오 메타데이터은 제외)
+
 ---
 ### 결과물
 <p align="center">

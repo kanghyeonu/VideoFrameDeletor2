@@ -46,7 +46,7 @@ func start() {
 		h.SetWriteFileHandler(modifiedVideoName)
 
 		//
-		h.CreateModifiedVideo(byteToRemove, start_offset, ratio, reverse)
+		h.CreateModifiedVideo(byteToRemove, start_offset, ratio, reverse, increment)
 		fmt.Println(modifiedVideoName + ".h264 processing...done\n")
 		// init
 		h.ResetFileHandler()

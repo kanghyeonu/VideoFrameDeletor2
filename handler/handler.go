@@ -4,6 +4,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"strconv"
 )
 
 type videoHandler struct {
@@ -59,7 +60,7 @@ func (h *videoHandler) GetDeleteOptions() (int, int, bool, bool, int) {
 		h.deleteOptions.increment
 }
 
-func (h *videoHandler) CreateModifiedVideo(byteToRemove int, offset int, ratio bool, reverse bool) {
+func (h *videoHandler) CreateModifiedVideo(byteToRemove int, offset int, ratio bool, reverse bool, increment int) {
 
 	numberOfNalu := 0 // number of NALU
 	readSize := 0     // read size frome original file
@@ -94,17 +95,17 @@ func (h *videoHandler) CreateModifiedVideo(byteToRemove int, offset int, ratio b
 		deletedSize += delSize
 	}
 
-	// print nalu info
-	// 나중에 리스트 형식으로 반환?
-
-	h.logger.Printf("File name: %s\nNumber of NALU: %d\nRead size: %d\nWrite size: %d\nDeleted size: %d\nMax NALU size: %f\nMin NALU size: %f\nNumber of NALU in video: %d\n",
-		h.h264WriteFileHandler.objectFile.Name(),
+	// wirte info to log file
+	h.logger.Printf("\nFile Path: %s\nOriginal File Name: %s\nNumber of NALU: %d\nRead size: %d\nWrite size: %d\nDeleted size: %d\nMax NALU size: %f\nMin NALU size: %f\nAverage Read NALU size: %f\nNumber of NALU in video: %d\n",
+		"modified videos/"+strconv.Itoa(byteToRemove)+"_"+strconv.Itoa(offset)+"_"+strconv.FormatBool(ratio)+"_"+strconv.FormatBool(reverse)+"_"+strconv.Itoa(increment)+"/log.txt",
+		h.h264ReadFileHandler.h264File.Name(),
 		numberOfNalu,
 		readSize,
 		writeSize,
 		deletedSize,
 		maxNaluSize,
 		minNaluSize,
+		float64(readSize)/float64(numberOfNalu),
 		len(naluLenSlice))
 
 }
