@@ -14,6 +14,8 @@ H.264/AVC 비디오 압축 표준으로 PIR로 인코딩된 프레임을 원하�
 - 비디오 변환 툴(i.e FFmpeg) -> mp4, avi -> h264
 
 ---
+### Class Diagram
+
 ![Image](https://github.com/user-attachments/assets/6425764a-1cbb-44af-aabb-73d76a60be06)
 ---
 
