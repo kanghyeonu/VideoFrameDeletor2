@@ -33,7 +33,7 @@ func setDeleteOptions(bytesToRemove string, offset string, ratio string, reverse
 /*
  *@return []byte, int: deletedNalu, deletedBytes
  */
-func deleteNaluByParams(nalu []byte, bytesToRemove int, offset int, ratio bool, reverse bool) ([]byte, int) {
+func (h *videoHandler) deleteNaluByParams(nalu []byte, bytesToRemove int, offset int, ratio bool, reverse bool) ([]byte, int) {
 	// nalu is empty
 	if len(nalu) == 0 {
 		//fmt.Print("no data to be deleted")

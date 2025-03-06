@@ -11,7 +11,7 @@ H.264/AVC 비디오 압축 표준으로 PIR로 인코딩된 프레임을 원하�
 ### Requirement
 
 - go 1.23.5
-- 비디오 처리 툴(i.e FFmpeg)
+- 비디오 변환 툴(i.e FFmpeg) -> mp4, avi -> h264
 
 ---
 
@@ -24,15 +24,7 @@ H.264/AVC 비디오 압축 표준으로 PIR로 인코딩된 프레임을 원하�
 
 - original videos 디렉토리에 수정할 원본 비디오 파일(.h264) 저장 
 
-- 실행 
-
-  exam)
-
-  ```
-  ~/VideoFrameDeletor2> go run main.go BBB_PIR.h264 5 5 1 0 5
-  ```
-
-- 실행 파라미터
+- 파라미터
 
   1. **filename** : Input file name with .h264 extension
   2. **bytesToRemove** : 0 to 100 if ratio is true, 0 to n if ratio is false
@@ -41,16 +33,31 @@ H.264/AVC 비디오 압축 표준으로 PIR로 인코딩된 프레임을 원하�
   5. **reverse** : Reverse the operation (true: 1/false: 0)
   6. **increment** : Increment value for start offset
 
+- 예시
+
+  ```
+  ~/VideoFrameDeletor2> go run main.go BBB_PIR.h264 5 5 1 0 5
+  ```
+
+  1. filename: BBB_PIR.h264
+  2. bytesToRemove: 5 <- 삭제할 바이트 수 5 bytes or 5%
+  3. start offset: 5 <- 삭제를 시작할 위치 nalu 크기의 5%되는 byte index위치
+  4. ratio: 1 <- **참**이면 비율기반으로 바이트 삭제, **거짓**이면 상수값으로 삭제
+  5. reverse: 0 <- **참**이면 정방향 좌 -> 우, **거짓**이면 역방향 우 -> 좌
+  6. incremet: 5 <- start offset의 증가량 5%, 10%, 15% ...에서 삭제 시작위치
+
 - 결과 파일
 
   **예시** **결과 파일의 경우 modified vidoes/5_5_true_false_5/ 의 경로**로 저장
+
+  -> offset5.h264, offset10.h264, offset15.h264..., offset95.h264 파일 생성
 
 ---
 
 ### 동작 알고리즘
 
 - h264 표준에서 각 Nalu의 시작 패턴은 **3byte 패턴(0x00001)**과 **4byte 패턴(0x000001)**으로 구성
-- 해당 시작 패턴을 찾아서 일정 수의 바이트 삭제 (비디오 메타데이터은 제외)
+- 해당 시작 패턴을 찾아서 각 Nalu의 크기를 기반으로 일정 수의 바이트 삭제 (비디오 메타데이터 Nalu는 제외)
 
 ---
 ### 결과물

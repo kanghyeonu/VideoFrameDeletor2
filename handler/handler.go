@@ -41,15 +41,11 @@ func CreateVideoHandler(inputs []string) *videoHandler {
 	}
 }
 
-func (h *videoHandler) ResetFileHandler() {
+func (h *videoHandler) resetFileHandler() {
 	h.h264ReadFileHandler.reset()
 	h.h264WriteFileHandler.init()
 	h.logFile.Close()
 
-}
-
-func (h *videoHandler) SetWriteFileHandler(filename string) {
-	h.h264WriteFileHandler = createWriteFileHandler(filename + ".h264")
 }
 
 func (h *videoHandler) GetDeleteOptions() (int, int, bool, bool, int) {
@@ -60,7 +56,8 @@ func (h *videoHandler) GetDeleteOptions() (int, int, bool, bool, int) {
 		h.deleteOptions.increment
 }
 
-func (h *videoHandler) CreateModifiedVideo(byteToRemove int, offset int, ratio bool, reverse bool, increment int) {
+func (h *videoHandler) CreateModifiedVideo(fileName string, byteToRemove int, offset int, ratio bool, reverse bool, increment int) {
+	h.h264WriteFileHandler = createWriteFileHandler(fileName + ".h264")
 
 	numberOfNalu := 0 // number of NALU
 	readSize := 0     // read size frome original file
@@ -89,12 +86,16 @@ func (h *videoHandler) CreateModifiedVideo(byteToRemove int, offset int, ratio b
 		readSize += naluLen
 
 		// delete NALU & write file
-		deletedNalu, delSize := deleteNaluByParams(nalu, byteToRemove, offset, ratio, reverse)
+		deletedNalu, delSize := h.deleteNaluByParams(nalu, byteToRemove, offset, ratio, reverse)
 		ws := h.h264WriteFileHandler.writeNalUnit(deletedNalu)
 		writeSize += ws
 		deletedSize += delSize
 	}
 
+	if h.logFile == nil {
+		h.CreateLogFile("log.txt")
+		h.logger.Print("Automatically generated\n")
+	}
 	// wirte info to log file
 	h.logger.Printf("\nFile Path: %s\nOriginal File Name: %s\nNumber of NALU: %d\nRead size: %d\nWrite size: %d\nDeleted size: %d\nMax NALU size: %f\nMin NALU size: %f\nAverage Read NALU size: %f\nNumber of NALU in video: %d\n",
 		"modified videos/"+strconv.Itoa(byteToRemove)+"_"+strconv.Itoa(offset)+"_"+strconv.FormatBool(ratio)+"_"+strconv.FormatBool(reverse)+"_"+strconv.Itoa(increment)+"/log.txt",
@@ -108,6 +109,7 @@ func (h *videoHandler) CreateModifiedVideo(byteToRemove int, offset int, ratio b
 		float64(readSize)/float64(numberOfNalu),
 		len(naluLenSlice))
 
+	h.resetFileHandler()
 }
 
 func (h *videoHandler) CreateLogFile(fileName string) *os.File {
