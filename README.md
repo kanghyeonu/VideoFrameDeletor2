@@ -1,7 +1,9 @@
 # VideoFrameDeletor2
-**VideoFrameDeletor repository 코드 리팩토링**
+2025 / 2 / 4 ~ 2025 / 3 / 6
 
-**원본 repository: https://github.com/kanghyeonu/VideoFrameDeletor**
+**VideoFrameDeletor repository 코드 리팩토링** 프로젝트
+
+
 
 H.264/AVC 비디오 압축 표준으로 PIR로 인코딩된 프레임을 원하는 범위를 바이트레벨에서 삭제하는 프로그램 
 (논문: Frame Sceduling Approach for Real-Time Streaming(ICTC 2024))
