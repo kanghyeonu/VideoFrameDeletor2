@@ -121,20 +121,19 @@ func (h *h264ReadFileHandler) getNalUnit(nalu_chan chan []byte) {
 		}
 
 		total += readDataBytes
-		currentLength := len(h.remainingBytes)
+		lastLength := len(h.remainingBytes) // last nal unit data length
 		h.remainingBytes = append(h.remainingBytes, h.fileReaderBuffer...)
 
 		var startPositions = []int{}
 
-		// 버퍼에 남은 데이터가 3byte 이상이면 -> 이어붙인 데이터의 시작 위치가 0th 인덱스일 경우 고려
-		if currentLength > 3 {
-			offset := currentLength - 3
+		// 이전에 읽은 데이터가 3byte 이상이면 (중복 읽기 방지 -> 남은 데이터가 수백 바이트면 낭비)
+		if lastLength > 3 {
+			offset := lastLength - 3 // 기존에 읽은 데이터의 끝 부분이 nalu start sequence 일 수 있음
 			startPositions = findStartSequencePosition(h.remainingBytes[offset:])
 			for idx, val := range startPositions {
 				startPositions[idx] = val + offset
 			}
-
-			// 3byte 미만이면 무조건
+			// 3byte 미만이면 무조건 처음부터 검색
 		} else {
 			startPositions = findStartSequencePosition(h.remainingBytes)
 			if len(startPositions) > 2 {
